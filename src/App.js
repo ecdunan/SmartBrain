@@ -30,27 +30,45 @@ class App extends Component {
     super()
     this.state = {
       input: '',
-      imageUrl : ''
+      imageUrl : '',
+      boxes: []
     }
+  }
+
+  calcFaceLoc = (response) => {
+    const facesArray  = response.outputs[0].data.regions;
+    const image       = document.getElementById('inputImage');
+    const height      = Number(image.height);
+    const width       = Number(image.width);
+    const coordsArray = facesArray.map(face => {
+      const box = face.region_info.bounding_box;
+      return {
+        leftCol : box.left_col * width,
+        topRow : box.top_row * height,
+        rightCol : width - (box.right_col * width),
+        bottomRow: height - (box.bottom_row * height)
+      }
+    });
+
+    return coordsArray;
+  }
+
+  setBoxesState = (boxes) => {
+    this.setState({boxes});
   }
 
   onInputChange = (event) => {
     this.setState({input: event.target.value});
-    console.log(this.state.input);
   }
 
   onDetect = () => {
-    this.setState({imageUrl: this.state.input})
+    this.setState({imageUrl: this.state.input});
     app.models
-      .predict(Clarifai.FACE_DETECT_MODEL,
-               this.state.input)
-      .then(function(response) {
-      // do something with response
-      console.log(response);
-      },
-      function(err) {
-        // there was an error
-      });
+    .predict(
+      Clarifai.FACE_DETECT_MODEL,
+      this.state.input)
+      .then(response => this.setBoxesState(this.calcFaceLoc(response)))
+      .catch(error => console.log(error));
   }
 
   render() {
@@ -62,11 +80,10 @@ class App extends Component {
         <Navigation />
         <Logo />
         <Rank />
-        <ImageLinkForm onInputChange={this.onInputChange} onDetect={this.onDetect}/>
-        <FaceRecognition image={this.state.imageUrl}/>
-
-
-        <div>Icons made by <a href="https://www.flaticon.com/authors/eucalyp" title="Eucalyp">Eucalyp</a> from <a href="https://www.flaticon.com/"                 title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/"                 title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+        <ImageLinkForm onInputChange={this.onInputChange}
+                       onDetect={this.onDetect}/>
+        <FaceRecognition boxes={this.state.boxes}
+                         image={this.state.imageUrl}/>
       </div>
     );
   }
