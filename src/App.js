@@ -9,11 +9,11 @@ import 'tachyons';
 
 const particlesParams = {
   particles: {
-    line_linked: {
-      shadow: {
+    number: {
+      value: Math.random() * (+50 - +30) + +30,
+      density : {
         enable: true,
-        color: "#3CA9D1",
-        blur: 5
+        value_area: Math.random() * (+400 - +200) + +200
       }
     }
   }
