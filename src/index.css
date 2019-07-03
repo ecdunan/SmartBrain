@@ -1,7 +1,6 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont,"Courier New", Courier, monospace
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont,"Courier New", Courier, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(89deg, #2746CC 0%, #CC4E27 100%);
