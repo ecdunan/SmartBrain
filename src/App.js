@@ -5,7 +5,10 @@ import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import Rank from './components/Rank/Rank';
 import Particles from 'react-particles-js';
+import SignIn from './components/SignIn/SignIn'
+import Register from './components/Register/Register'
 import Clarifai from 'clarifai';
+import { particlesParams } from './config.js'
 import './App.css';
 import 'tachyons';
 
@@ -13,29 +16,29 @@ const app = new Clarifai.App({
  apiKey: 'ce2e19410fea4a48b8d521989ea8963b'
 });
 
-const particlesParams = {
-  particles: {
-    number: {
-      value: Math.random() * (+50 - +30) + +30,
-      density : {
-        enable: true,
-        value_area: Math.random() * (+400 - +200) + +200
-      }
-    }
-  }
-}
-
 class App extends Component {
   constructor() {
     super()
     this.state = {
       input: '',
       imageUrl : '',
-      boxes: []
+      boxes: [],
+      route: 'signIn',
+      isSignedIn: false
     }
   }
 
-  calcFaceLoc = (response) => {
+  onChangeRoute = (route) => {
+    this.setState({route});
+
+    if (route === 'signOut') {
+      this.setState({isSignedIn: false});
+    } else if(route === 'home') {
+      this.setState({isSignedIn: true});
+    }
+  }
+
+    calculateFaceLocation = (response) => {
     const facesArray  = response.outputs[0].data.regions;
     const image       = document.getElementById('inputImage');
     const height      = Number(image.height);
@@ -49,16 +52,19 @@ class App extends Component {
         bottomRow: height - (box.bottom_row * height)
       }
     });
-
     return coordsArray;
   }
 
-  setBoxesState = (boxes) => {
-    this.setState({boxes});
-  }
-
-  onInputChange = (event) => {
-    this.setState({input: event.target.value});
+  onDetect = () => {
+    if (this.state.input) {
+      this.setState({imageUrl: this.state.input});
+      app.models
+      .predict(
+        Clarifai.FACE_DETECT_MODEL,
+        this.state.input)
+        .then(response => this.setBoxesState(this.calculateFaceLocation(response)))
+        .catch(error => console.log(error));
+    }
   }
 
   onEnter = (event) => {
@@ -68,30 +74,41 @@ class App extends Component {
     }
   }
 
-  onDetect = () => {
-    this.setState({imageUrl: this.state.input});
-    app.models
-    .predict(
-      Clarifai.FACE_DETECT_MODEL,
-      this.state.input)
-      .then(response => this.setBoxesState(this.calcFaceLoc(response)))
-      .catch(error => console.log(error));
+  onInputChange = (event) => {
+    this.setState({input: event.target.value});
+  }
+
+  setBoxesState = (boxes) => {
+    this.setState({boxes});
   }
 
   render() {
+      const { imageUrl, route, boxes, isSignedIn } = this.state;
     return (
       <div className="App">
         <Particles className='particles'
                 params={particlesParams}
               />
-        <Navigation />
-        <Logo />
-        <Rank />
-        <ImageLinkForm onInputChange={this.onInputChange}
-                       onDetect={this.onDetect}
-                       onEnter={this.onEnter}/>
-        <FaceRecognition boxes={this.state.boxes}
-                         image={this.state.imageUrl}/>
+        <Navigation isSignedIn={isSignedIn}
+                    onChangeRoute={this.onChangeRoute}/>
+
+        {
+          route === 'home'
+          ? (
+              <div>
+                <Logo />
+                <Rank />
+                <ImageLinkForm onInputChange={this.onInputChange}
+                               onDetect={this.onDetect}
+                               onEnter={this.onEnter}/>
+                <FaceRecognition boxes={boxes}
+                                 image={imageUrl}/>
+              </div>
+          ) : route === 'register'
+              ? <Register onRegister={this.onChangeRoute} />
+              :
+                  <SignIn onSignIn={this.onChangeRoute} />
+        }
       </div>
     );
   }
