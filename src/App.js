@@ -61,6 +61,13 @@ class App extends Component {
     this.setState({input: event.target.value});
   }
 
+  onEnter = (event) => {
+    if (event.key === 'Enter') {
+      this.onInputChange(event);
+      this.onDetect();
+    }
+  }
+
   onDetect = () => {
     this.setState({imageUrl: this.state.input});
     app.models
@@ -81,7 +88,8 @@ class App extends Component {
         <Logo />
         <Rank />
         <ImageLinkForm onInputChange={this.onInputChange}
-                       onDetect={this.onDetect}/>
+                       onDetect={this.onDetect}
+                       onEnter={this.onEnter}/>
         <FaceRecognition boxes={this.state.boxes}
                          image={this.state.imageUrl}/>
       </div>
