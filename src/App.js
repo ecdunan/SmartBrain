@@ -24,12 +24,26 @@ class App extends Component {
       imageUrl : '',
       boxes: [],
       route: 'signIn',
-      isSignedIn: false
+      isSignedIn: false,
+      user: {id: 0,
+            name: '',
+            email: '',
+            entries: 0,
+            joined: ''}
     }
   }
 
+  loadUser = user => {
+    this.setState({user : {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      entries: user.entries,
+      joined: user.joined
+    }});
+  }
 
-  onChangeRoute = (route) => {
+  onChangeRoute = route => {
     this.setState({route});
 
     if (route === 'signOut') {
@@ -39,7 +53,7 @@ class App extends Component {
     }
   }
 
-    calculateFaceLocation = (response) => {
+    calculateFaceLocation = response => {
     const facesArray  = response.outputs[0].data.regions;
     const image       = document.getElementById('inputImage');
     const height      = Number(image.height);
@@ -63,28 +77,47 @@ class App extends Component {
       .predict(
         Clarifai.FACE_DETECT_MODEL,
         this.state.input)
-        .then(response => this.setBoxesState(this.calculateFaceLocation(response)))
+        .then(response =>
+          {
+            if(response) {
+              fetch('http://localhost:3000/image', {
+              method: 'PUT',
+              headers: {'Content-type' : 'application/json'},
+              body : JSON.stringify({
+                  id: this.state.user.id
+                })
+            }).then(response => response.json())
+              .then(count => {
+                  this.setState(Object.assign(this.state.user, {entries: count}))
+                  // console.log(count);
+                }
+              )
+            }
+            this.setBoxesState(this.calculateFaceLocation(response))
+        })
         .catch(error => console.log(error));
+
+
     }
   }
 
-  onEnter = (event) => {
+  onEnter = event => {
     if (event.key === 'Enter') {
       this.onInputChange(event);
       this.onDetect();
     }
   }
 
-  onInputChange = (event) => {
+  onInputChange = event => {
     this.setState({input: event.target.value});
   }
 
-  setBoxesState = (boxes) => {
+  setBoxesState = boxes => {
     this.setState({boxes});
   }
 
   render() {
-      const { imageUrl, route, boxes, isSignedIn } = this.state;
+      const { imageUrl, route, boxes, isSignedIn, user} = this.state;
     return (
       <div className="App">
         <Particles className='particles'
@@ -98,7 +131,8 @@ class App extends Component {
           ? (
               <div>
                 <Logo />
-                <Rank />
+                <Rank name = {user.name}
+                      entries = {user.entries}/>
                 <ImageLinkForm onInputChange={this.onInputChange}
                                onDetect={this.onDetect}
                                onEnter={this.onEnter}/>
@@ -106,9 +140,11 @@ class App extends Component {
                                  image={imageUrl}/>
               </div>
           ) : route === 'register'
-              ? <Register onRegister={this.onChangeRoute} />
+              ? <Register onRegister={this.onChangeRoute}
+                          loadUser={this.loadUser}/>
               :
-                  <SignIn onSignIn={this.onChangeRoute} />
+                <SignIn onSignIn={this.onChangeRoute}
+                        loadUser={this.loadUser}/>
         }
       </div>
     );

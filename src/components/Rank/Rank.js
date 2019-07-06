@@ -1,13 +1,13 @@
 import React from 'react';
 
-function Rank() {
+function Rank(props) {
     return (
         <div>
             <div className='white f3'>
-                {'User, your current rank is...'}
+                {`Hi ${props.name}! You loaded a total of...`}
             </div>
             <div className='white f1'>
-                {'#5'}
+                {`${props.entries} images!`}
             </div>
         </div>
     );
