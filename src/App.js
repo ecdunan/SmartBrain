@@ -84,20 +84,17 @@ class App extends Component {
               method: 'PUT',
               headers: {'Content-type' : 'application/json'},
               body : JSON.stringify({
-                  id: this.state.user.id
-                })
+                id: this.state.user.id
+              })
             }).then(response => response.json())
               .then(count => {
                   this.setState(Object.assign(this.state.user, {entries: count}))
-                  // console.log(count);
                 }
               )
             }
             this.setBoxesState(this.calculateFaceLocation(response))
         })
         .catch(error => console.log(error));
-
-
     }
   }
 
