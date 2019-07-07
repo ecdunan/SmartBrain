@@ -7,14 +7,9 @@ import Rank from './components/Rank/Rank';
 import Particles from 'react-particles-js';
 import SignIn from './components/SignIn/SignIn'
 import Register from './components/Register/Register'
-import Clarifai from 'clarifai';
 import { particlesParams } from './config.js'
 import './App.css';
 import 'tachyons';
-
-const app = new Clarifai.App({
- apiKey: 'ce2e19410fea4a48b8d521989ea8963b'
-});
 
 const initialState = {
   input: '',
@@ -76,26 +71,30 @@ class App extends Component {
   onDetect = () => {
     if (this.state.input) {
       this.setState({imageUrl: this.state.input});
-      app.models
-      .predict(
-        Clarifai.FACE_DETECT_MODEL,
-        this.state.input)
+        fetch('http://localhost:3000/imageurl', {
+          method: 'POST',
+          headers: {'Content-type' : 'application/json'},
+          body : JSON.stringify({
+            id: this.state.user.id,
+            input: this.state.input
+          })
+        })
+        .then(response => response.json())
         .then(response =>
           {
             if(response) {
               fetch('http://localhost:3000/image', {
-              method: 'PUT',
-              headers: {'Content-type' : 'application/json'},
-              body : JSON.stringify({
-                id: this.state.user.id
-              })
-            }).then(response => response.json())
-              .then(count => {
+                method: 'PUT',
+                headers: {'Content-type' : 'application/json'},
+                body : JSON.stringify({
+                  id: this.state.user.id
+                })
+              }).then(response => response.json())
+                .then(count => {
                   this.setState(Object.assign(this.state.user, {entries: count}))
-                }
-              )
-            }
-            this.setBoxesState(this.calculateFaceLocation(response))
+                })
+              }
+              this.setBoxesState(this.calculateFaceLocation(response))
         })
         .catch(error => console.log(error));
     }
