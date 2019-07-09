@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import brain from '../Logo/brain.png';
+import preloader from '../../preloader.svg'
 
 class Register extends Component {
   constructor(props) {
@@ -8,7 +9,8 @@ class Register extends Component {
     this.state = {
       name: '',
       email : '',
-      password: ''
+      password: '',
+      registering: false
     }
   }
 
@@ -31,6 +33,7 @@ class Register extends Component {
   }
 
   onRegisterSubmit = event => {
+    this.setState({registering: true});
     fetch('https://damp-harbor-47284.herokuapp.com/register', {
         method: 'POST',
         headers: {'Content-type' : 'application/json'},
@@ -44,6 +47,9 @@ class Register extends Component {
           if(user.id) {
             this.props.loadUser(user);
             this.props.onRegister('home');
+          } else {
+            alert('Error with registration occured');
+            this.setState({registering:false});
           }
         });
   }
@@ -87,9 +93,16 @@ class Register extends Component {
                       </div>
                     </fieldset>
                     <div className="">
-                      <input className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib" type="submit"
-                          onClick={this.onRegisterSubmit}
-                          value="Register"/>
+                      {
+                        this.state.registering ?
+                          <img src={preloader} alt='loading' height="30px"/>
+                        : (
+                            <input className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
+                              type="submit"
+                              onClick={this.onRegisterSubmit}
+                              value="Register"/>
+                          )
+                      }
                     </div>
                   </div>
                 </main>

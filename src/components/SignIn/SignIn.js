@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import brain from '../Logo/brain.png';
+import preloader from '../../preloader.svg'
 import './SignIn.css';
 
  class SignIn extends Component {
@@ -8,7 +9,8 @@ import './SignIn.css';
 
       this.state = {
         signInEmail: '',
-        signInPassword: ''
+        signInPassword: '',
+        signingIn: false
       }
     }
 
@@ -21,6 +23,8 @@ import './SignIn.css';
     }
 
     onSignInSubmit = event => {
+      this.setState({signingIn: true});
+
       fetch('https://damp-harbor-47284.herokuapp.com/signin', {
         method: 'POST',
         headers: {'Content-type' : 'application/json'},
@@ -28,13 +32,20 @@ import './SignIn.css';
           email: this.state.signInEmail,
           password: this.state.signInPassword
         })
-      }).then(response => response.json())
-        .then(user => {
+      })
+      .then(response => response.json())
+      .then(user => {
           if(user.id) {
             this.props.loadUser(user);
             this.props.onSignIn('home');
+          } else {
+            alert('Wrong credentials');
+            this.setState({signingIn: false});
           }
-        })
+      })
+      .catch(error => {
+        console.log(error);
+      })
     }
 
     onEnterPress = event => {
@@ -74,9 +85,16 @@ import './SignIn.css';
                         </div>
                       </fieldset>
                       <div className="">
-                        <input className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib" type="submit"
+                        {
+                          this.state.signingIn ?
+                          <img src={preloader} alt='loading' height="30px"/>
+                        : (
+                            <input className="b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib"
+                            type="submit"
                             onClick={this.onSignInSubmit}
                             value="Sign in"/>
+                          )
+                        }
                       </div>
                     </div>
                   </main>
