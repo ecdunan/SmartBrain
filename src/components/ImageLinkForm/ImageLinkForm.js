@@ -10,6 +10,7 @@ function ImageLinkForm({ onInputChange, onDetect, onEnter }) {
             <div className='center'>
                 <div className='pa4 br3 shadow-5 center form'>
                     <input className='f4 pa2 w-70 center' type='text'
+                            placeholder = 'Enter image URL'
                             onChange={ onInputChange }
                             onKeyPress={ onEnter }/>
                     <button className='w-30 f4 link ph3 pv2 dib white bg-light-purple grow pointer'
