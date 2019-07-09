@@ -34,6 +34,7 @@ class Register extends Component {
 
   onRegisterSubmit = event => {
     this.setState({registering: true});
+
     fetch('https://damp-harbor-47284.herokuapp.com/register', {
         method: 'POST',
         headers: {'Content-type' : 'application/json'},
@@ -44,14 +45,12 @@ class Register extends Component {
         })
       }).then(response => response.json())
         .then(user => {
+          console.log(user);
           if(user.id) {
             this.props.loadUser(user);
             this.props.onRegister('home');
-          } else {
-            alert('Error with registration occured');
-            this.setState({registering:false});
           }
-        });
+      });
   }
 
   render() {
