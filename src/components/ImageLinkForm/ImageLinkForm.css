@@ -1,3 +1,8 @@
+.imagelinkform::placeholder {
+    color: gray;
+    font-style: italic;
+}
+
 .form {
     width: 700px;
 }
